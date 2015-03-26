@@ -13,10 +13,9 @@ setMethod(
 )
 
 
-#' constructor for argsparsR objects.
+#' constructor for `argsparsR` objects.
 #'
-#' Create an instance of a \code{argsparsR} object. Takes the definition of
-#' the arguments as only parameter.
+#' Create an instance of an \code{argsparsR} object.
 #'
 #' The argument list is defined as a 5-column matrix, whose columns are:
 #'
@@ -34,14 +33,26 @@ setMethod(
 #' both is optional. Remember anyway that you are filling in an R array,
 #' so if you don't specify an item you have to set it to \code{''}.
 #'
+#' There are more ways to provide the definition to \code{argsparsR}.
+#'
+#' The first way is to provide a \code{matrix} containing the definitions.
+#' The \code{data} vector of the \code{matrix} is the list of definitions.
+#'
 #' The \code{nrow} parameter of \code{matrix} is the number of argument
 #' definitions given.
 #'
 #' The \code{byrow=TRUE} option in the matrix definition is also preferred,
-#' as this allows a much clearer representation than the R default behaviour
+#' as this allows a much more clear representation than the R default behaviour
 #' of column-wise packing of the data.
 #'
+#' The second method is by providing a text file containing the definitions, as
+#' defined in the beginning of this section. It is also possible to specify
+#' some optional arguments, for which refer to the documentation of \code{read.table}.
+#'
+#' The definitions in the file must be defined by row.
+#'
 #' @param args matrix of argument definitions, as defined in the `Details` section.
+#' @param ... optional arguments of \code{read.table}.
 #'
 #' @return a \code{argsparsR} object compiled with the parameter definitions given.
 #'
@@ -61,7 +72,7 @@ setMethod(
 #' 
 #'
 #' @export
-argsparsR <- function(args = NULL) {
+argsparsR <- function(args = NULL, ...) {
 
   x <- new("argsparsR")
 
@@ -72,6 +83,18 @@ argsparsR <- function(args = NULL) {
   }
 
   # if args is a file, read the file
+  if (class(args) == "character") {
+    # check if file exists
+    if (!file.exists(args)) {
+      # - if not, is it a valid string (== can be transformed in a matrix?)
+    } else {
+      # check file type
+      # write method for reading csv (in util.R)
+      args <- read.params.file(args, ...)
+      # write method for reading text file (in util.R)
+    }
+
+  }
 
   # otherwise...
 
@@ -80,18 +103,37 @@ argsparsR <- function(args = NULL) {
   x@args.names <- args[,1]
   x@long.flags <- args[,2]
   x@short.flags <- args[,3]
-  x@args.types  <- args[,4]
+  x@args.types  <- tolower(c(args[,4]))
   x@args.defaults <- as.list(args[,5])
 
-  for (i in 1:x@no.args) {
-    x@args.defaults[[i]] <- convertType(x@args.defaults[[i]],
-                                        x@args.types[i])
+  # check argument types: allowed for now are
+  # integer, numeric, logical, character
+  if (FALSE %in% c(x@args.types %in% c("numeric", "integer", "logical", "character"))) {
+    wrongs <- which(x@args.types %in% c("numeric", "integer", "logical", "character") == FALSE)
+    stop("argsparsR fatal error :: type not allowed for argument(s) ",
+         strcat(c(x@args.names[wrongs]), sep=" "),
+         "\nAllowed types are: 'numeric', 'integer', 'logical', 'character'.")
   }
 
-  # TODO check everything is ok:
-  # - no spaces in names and flags
-  # - type is valid
-  # - default value is of the right type
+  # TODO move this to validObject()?
+  for (i in 1:x@no.args) {
+    if (grepl(' ', x@args.names[i]) == TRUE ||
+        grepl(' ', x@long.flags[i]) == TRUE ||
+        grepl(' ', x@long.flags[i]) == TRUE   ) {
+      stop("argsparsR fatal error :: no spaces are allowed in arguments names or flags.")
+    }
+
+    tryCatch(
+      x@args.defaults[[i]] <- convertType(x@args.defaults[[i]],
+                                          x@args.types[i])
+      ,
+      error = function(e) {
+        stop("argsparsR fatal error :: default value for parameter '",
+             x@args.names[i],
+             "' is not of type '",x@args.types[i],"'\n")
+      }
+    )
+  }
 
   x@values <- x@args.defaults
 

@@ -9,6 +9,36 @@ Description
 `argsparsR` is a small package to get and interpret command line parameters
 passed to R scripts (e.g. scripts run with `Rscript`). 
 
+The argument list is defined as a 5-column matrix, whose columns are:
+
+1. name of the argument (string, no spaces)
+2. long flag, of the kind `--argument` (string, no spaces)
+3. short flag, of the kind `-a` (string, no spaces)
+4. argument (basic R-)type (one among `character`, `logical`, `integer`, `numeric`)
+5. default value
+
+Providing at least one among the long and the short flags is mandatory,
+both is optional. Remember anyway that you are filling in an R array,
+so if you don't specify an item you have to set it to `''`.
+
+There are more ways to provide the definition to `argsparsR`.
+
+The first way is to provide a `matrix` containing the definitions.
+The `data` vector of the `matrix` is the list of definitions.
+
+The `nrow` parameter of `matrix` is the number of argument
+definitions given.
+
+The `byrow=TRUE` option in the matrix definition is also preferred,
+as this allows a much more clear representation than the R default behaviour
+of column-wise packing of the data.
+
+The second method is by providing a text file containing the definitions, as
+defined in the beginning of this section. It is also possible to specify
+some optional arguments, for which refer to the documentation of `read.table`.
+
+The definitions in the file must be defined by row.
+
 # Installation
 The package is hosted at https://github.com/albertofranzin/argsparsR.
 

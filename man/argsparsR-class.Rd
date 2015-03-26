@@ -10,12 +10,14 @@
 \usage{
 \S4method{initialize}{argsparsR}(.Object)
 
-argsparsR(args = NULL)
+argsparsR(args = NULL, ...)
 }
 \arguments{
 \item{.Object}{an argsparsR object.}
 
 \item{args}{matrix of argument definitions, as defined in the `Details` section.}
+
+\item{...}{optional arguments of \code{read.table}.}
 }
 \value{
 a \code{argsparsR} object compiled with the parameter definitions given.
@@ -24,8 +26,7 @@ a \code{argsparsR} object compiled with the parameter definitions given.
 \code{argsparsR} creates an instance of a \code{argsparsR} object.
 Takes the definition of the arguments as only parameter.
 
-Create an instance of a \code{argsparsR} object. Takes the definition of
-the arguments as only parameter.
+Create an instance of an \code{argsparsR} object.
 }
 \details{
 The argument list is defined as a 5-column matrix, whose columns are:
@@ -67,12 +68,23 @@ Providing at least one among the long and the short flags is mandatory,
 both is optional. Remember anyway that you are filling in an R array,
 so if you don't specify an item you have to set it to \code{''}.
 
+There are more ways to provide the definition to \code{argsparsR}.
+
+The first way is to provide a \code{matrix} containing the definitions.
+The \code{data} vector of the \code{matrix} is the list of definitions.
+
 The \code{nrow} parameter of \code{matrix} is the number of argument
 definitions given.
 
 The \code{byrow=TRUE} option in the matrix definition is also preferred,
-as this allows a much clearer representation than the R default behaviour
+as this allows a much more clear representation than the R default behaviour
 of column-wise packing of the data.
+
+The second method is by providing a text file containing the definitions, as
+defined in the beginning of this section. It is also possible to specify
+some optional arguments, for which refer to the documentation of \code{read.table}.
+
+The definitions in the file must be defined by row.
 }
 \section{Slots}{
 
