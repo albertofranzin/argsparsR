@@ -7,7 +7,7 @@ Description
 -----------
 
 `argsparsR` is a small package to get and interpret command line parameters
-paassed to R scripts (e.g. scripts run with `Rscript`). 
+passed to R scripts (e.g. scripts run with `Rscript`). 
 
 # Installation
 The package is hosted at https://github.com/albertofranzin/argsparsR.
@@ -51,12 +51,12 @@ $ Rscript myscript.R --name "Someone Else" -t "Nowhere"
 
 Then, the `params` object of the above snippet will contain:
 
-1. `params$params` a vector containing the names of the parameters:
+* `params$params` a vector containing the names of the parameters:
     `('name' 'age' 'town')`
 
-2. `params$values` a list containing the values for the corresponding elements
+* `params$values` a list containing the values for the corresponding elements
     in `params$params`, with the desired values for the parameters actually
     seen in the command, and the default values for the other ones:
-    1. `params$values$name` with value `'Someone Else'
+    1. `params$values$name` with value `'Someone Else'`
     2. `params$values$age` with value `99`
     3. `params$values$town` with value `'Nowhere'`.
