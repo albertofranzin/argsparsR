@@ -119,8 +119,11 @@ parsR <- function(cargs, x) {
     poslf <- match(cargs[i], x@long.flags)
     possf <- match(cargs[i], x@short.flags)
 
-    if (is.na(poslf) && is.na(possf))
+    if (is.na(poslf) && is.na(possf)){
+      message("argsparsR :: there are unrecognized arguments.")
+      print.help(x@args)
       stop("argsparsR fatal error :: argument ", cargs[i], " not recognized.")
+    }
 
     if (!is.na(poslf))
       pos <- poslf

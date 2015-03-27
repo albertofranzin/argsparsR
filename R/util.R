@@ -21,7 +21,7 @@ convertType <- function(x, type) {
 
 }
 
-# read.params.csv
+# read.params.file
 read.params.file <- function(filename, ...) {
   m <- as.matrix(read.table(filename, ...), ncol=5, byrow=TRUE)
   return (m) 
@@ -38,4 +38,13 @@ strcat <- function(..., sep = '')
     s <- paste(s, as.character(i), sep=sep)
   }
   return(s)
+}
+
+# print a small helper when parameters are not recognized
+print.help <- function(x) {
+  message("Argument definitions provided are:\n")
+  rownames(x) <- sapply(x[,1], function(n) strcat(c("  ",n, " : ")))
+  colnames(x) <- c("Name", " Long Flag ", " Short Flag ", " Type ", " Default Value ")
+  print(x[,2:5])
+  message("")
 }
