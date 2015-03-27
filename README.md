@@ -9,17 +9,34 @@ Description
 `argsparsR` is a small package to get and interpret command line parameters
 passed to R scripts (e.g. scripts run with `Rscript`). 
 
-The argument list is defined as a 5-column matrix, whose columns are:
+The argument list is defined as a 6-column matrix, whose columns are:
 
 1. name of the argument (string, no spaces)
 2. long flag, of the kind `--argument` (string, no spaces)
 3. short flag, of the kind `-a` (string, no spaces)
 4. argument (basic R-)type (one among `character`, `logical`, `integer`, `numeric`)
-5. default value
+5. the number of values to be expected after the flag. `0` means that
+   the flag alone is the parameter, like in `--help`. `1` means that only one value
+   is expected after the flag, a value `k` higher than one means that exactly
+   `k` values are to be read after the flag (e.g. `3` for something like
+   `--3Dcoord 5 7 8`). `-1` means instead an arbitrary number of values,
+   until another flag is found, or there are no more parameters.
+6. default value(s). If the value in the 5th column is `0`, just write `''`,
+   do not leave a blank space; if the value in the 5th column is not `0` or `1`,
+   write the sequence of values separated by commas without blank spaces,
+   e.g. `5,6,NA,8` or `a,c,g,t`.
 
 Providing at least one among the long and the short flags is mandatory,
 both is optional. Remember anyway that you are filling in an R array,
 so if you don't specify an item you have to set it to `''`.
+
+Parameters with `0` values expected after the flag act as yes/no indicators.
+In this case, the value the parameter will take after the processing, if the
+(or one of the) corresponding flag(s) is present is the name of the parameter.
+Default value should be `''`.
+
+Parameters with `k > 1` values expected after the flag have to be _exactly_
+`k` values after the flag, otherwise bad things will happen.
 
 There are more ways to provide the definition to `argsparsR`.
 
@@ -135,3 +152,21 @@ In all of the above cases, the `params` object will contain:
     1. `params$values$name` with value `'Someone Else'`
     2. `params$values$age` with value `99`
     3. `params$values$town` with value `'Nowhere'`.
+
+Parameters that no values after the flag are defined as
+```
+name --flag -f character 0 ''
+```
+and are called as
+```bash
+Rscript myscript.R --flag
+```
+
+Parameter that take more than one value after the flag are defined as
+```
+name --flag -f numeric 5 1,2,3,4,5
+```
+and are called as
+```bash
+Rscript myscript.R --flag 4 5 6 7 8
+```

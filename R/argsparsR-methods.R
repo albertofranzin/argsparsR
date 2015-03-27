@@ -53,7 +53,25 @@ argsparsR <- function(args.defs = NULL, ...) {
   x@long.flags    <- args.defs[,2]
   x@short.flags   <- args.defs[,3]
   x@args.types    <- tolower(c(args.defs[,4]))
-  x@args.defaults <- as.list(args.defs[,5])
+  x@args.defaults <- list(rep(NULL,x@no.args))
+  
+  for (i in 1:x@no.args) {
+    tryCatch(
+      x@args.no.vals[i] <- as.integer(args.defs[i,5])
+      ,
+      error = function(e) {
+        stop("argsparsR fatal error :: number of values for parameter '",
+             x@args.names[i],
+             "' must be an integer.\n")
+      }
+    )
+    if (x@args.no.vals[i] %in% c(0,1))
+      x@args.defaults[[i]] <- args.defs[i,6]
+    else {
+      x@args.defaults[[i]] <- strsplit(args.defs[i,6],',')[[1]]
+    }
+    names(x@args.defaults[[i]]) <- NULL
+  }
 
   # check argument types: allowed for now are
   # integer, numeric, logical, character
@@ -85,7 +103,7 @@ argsparsR <- function(args.defs = NULL, ...) {
   }
 
   x@values <- x@args.defaults
-
+  
   return(parsR(cargs, x))
 }
 
@@ -116,8 +134,8 @@ parsR <- function(cargs, x) {
   i <- 1
   ncargs <- length(cargs)
   while (i <= ncargs) {
-    poslf <- match(cargs[i], x@long.flags)
-    possf <- match(cargs[i], x@short.flags)
+    poslf     <- match(cargs[i], x@long.flags)
+    possf     <- match(cargs[i], x@short.flags)
 
     if (is.na(poslf) && is.na(possf)){
       message("argsparsR :: there are unrecognized arguments.")
@@ -130,17 +148,39 @@ parsR <- function(cargs, x) {
     else
       pos <- possf
 
-    i <- i + 1
-    val <- cargs[i]
+    if (x@args.no.vals[pos] == 0){
+      
+      # 'singleton' parameter: works as yes/no
+      # if present (=yes) the value takes the name of the parameter
+      x@values[[pos]] <- x@args.names[pos]
 
-    tryCatch(
-      x@values[[pos]] <- convertType(val, x@args.types[pos])
-    ,
-      error = function(e) {
-         stop("argsparsR fatal error :: value of '",x@args.names[pos],
-              "' not coherent with the parameter type (",x@args.types[pos],").")
+    } else {
+      
+      if (x@args.no.vals[pos] > 0)
+        end <- i + x@args.no.vals[pos]
+      else {
+        # variable number of values: iterate get until a new flag is found,
+        # or until the parameters are finished
+        # find value for end
+        # TODO implement
       }
-    )
+      
+      vals <- c()
+      while (i < end) {
+        i <- i + 1
+        vals <- c(vals, cargs[i])
+      }
+  
+      tryCatch(
+        x@values[[pos]] <- convertType(vals, x@args.types[pos])
+      ,
+        error = function(e) {
+           stop("argsparsR fatal error :: value of '",x@args.names[pos],
+                "' not coherent with the parameter type (",x@args.types[pos],").")
+        }
+      )
+
+    }
 
     i <- i + 1
   }

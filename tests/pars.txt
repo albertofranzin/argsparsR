@@ -1,5 +1,7 @@
-a --a -a integer 5
-b --b '' numeric 6.7
-c --c -c logical TRUE
-d --d -d numeric 4
-e --e -e character ciao
+a --a -a integer 1 5
+b --b '' numeric 3 6,7,8
+c --c -c logical 1 FALSE
+d --d -d numeric 1 4
+e --e -e character 1 ciao
+f --f -f character 0 ''
+g --g -g integer 1 1

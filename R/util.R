@@ -1,11 +1,13 @@
 # convertType
 convertType <- function(x, type) {
 
-  if (type != "character" && x == "NA")
-    return(NA)
-
-  if (type != "character" && x == "NULL")
-    return(NULL)
+  if (length(x) == 1) {
+    if (type != "character" && x == "NA")
+      return(NA)
+  
+    if (type != "character" && x == "NULL")
+      return(NULL)    
+  }
 
   if (type == "logical")
     return(as.logical(x))
@@ -23,7 +25,7 @@ convertType <- function(x, type) {
 
 # read.params.file
 read.params.file <- function(filename, ...) {
-  m <- as.matrix(read.table(filename, ...), ncol=5, byrow=TRUE)
+  m <- as.matrix(read.table(filename, ...), ncol=6, byrow=TRUE)
   return (m) 
 }
 
@@ -44,7 +46,7 @@ strcat <- function(..., sep = '')
 print.help <- function(x) {
   message("Argument definitions provided are:\n")
   rownames(x) <- sapply(x[,1], function(n) strcat(c("  ",n, " : ")))
-  colnames(x) <- c("Name", " Long Flag ", " Short Flag ", " Type ", " Default Value ")
-  print(x[,2:5])
+  colnames(x) <- c("Name", " Long Flag ", " Short Flag ", " Type ", " Number of values ", " Default Value ")
+  print(x[,2:6])
   message("")
 }
