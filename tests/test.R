@@ -19,10 +19,6 @@ args <- argsparsR(definition)
 
 print(args)
 
-args <- parsR(args)
-
-print(args)
-
 print(class(args$values$d))
 
 args <- argsparsR("./tests/pars.csv", header=FALSE)

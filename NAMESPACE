@@ -2,4 +2,3 @@
 
 export(argsparsR)
 exportClasses(argsparsR)
-exportMethods(parsR)

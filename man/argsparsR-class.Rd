@@ -5,53 +5,34 @@
 \alias{argsparsR}
 \alias{argsparsR,argsparsR-class}
 \alias{argsparsR-class}
-\alias{initialize,argsparsR-method}
 \title{argsparsR class definition.}
 \usage{
-\S4method{initialize}{argsparsR}(.Object)
-
-argsparsR(args = NULL, ...)
+argsparsR(args.defs = NULL, ...)
 }
 \arguments{
-\item{.Object}{an argsparsR object.}
-
-\item{args}{matrix of argument definitions, as defined in the `Details` section.}
+\item{args.defs}{(file containing the) matrix of argument definitions,
+as defined in the `Details` section, or `NULL`, or nothing provided. In case
+of `NULL` or not provided, then it is assumed that the first parameter given
+in the command line is a file containing the definitions.}
 
 \item{...}{optional arguments of \code{read.table}.}
 }
 \value{
-a \code{argsparsR} object compiled with the parameter definitions given.
+if a valid parameter definition is given, a list containing:
+
+* \code{params}, a vector containing the parameter names;
+
+* \code{values}, a vector containing the values for the corresponding parameter in
+\code{params}. The value is the value provided through command line
+if present, and the default value otherwise.
+
+If no definition is given in the constructor, and the first command line
+is not a valid file, the raw list of command line parameters is returned.
 }
 \description{
 \code{argsparsR} creates an instance of a \code{argsparsR} object.
-Takes the definition of the arguments as only parameter.
-
-Create an instance of an \code{argsparsR} object.
 }
 \details{
-The argument list is defined as a 5-column matrix, whose columns are:
-
-1. name of the argument (string, no spaces)
-
-2. long flag, of the kind \code{--argument} (string, no spaces)
-
-3. short flag, of the kind \code{-a} (string, no spaces)
-
-4. argument (basic R-)type (one among character, logical, integer, numeric)
-
-5. default value
-
-Providing at least one among the long and the short flags is mandatory,
-both is optional. Remember anyway that you are filling in an R array,
-so if you don't specify an item you have to set it to \code{''}.
-
-The \code{nrow} parameter of \code{matrix} is the number of argument
-definitions given.
-
-The \code{byrow=TRUE} option in the matrix definition is also preferred,
-as this allows a much clearer representation than the R default behaviour
-of column-wise packing of the data.
-
 The argument list is defined as a 5-column matrix, whose columns are:
 
 1. name of the argument (string, no spaces)
@@ -85,6 +66,20 @@ defined in the beginning of this section. It is also possible to specify
 some optional arguments, for which refer to the documentation of \code{read.table}.
 
 The definitions in the file must be defined by row.
+
+The file can also be given as first command line parameter; in this case, use
+an empty constructor `argsparsR()`, with no arguments.
+
+When a valid parameter definition is given, the method returns a list containing:
+
+* \code{params}, a vector containing the parameter names;
+
+* \code{values}, a vector containing the values for the corresponding parameter in
+\code{params}. The value is the value provided through command line
+if present, and the default value otherwise.
+
+If no definition is given in the constructor, and the first command line
+is not a valid file, the raw list of command line parameters is returned.
 }
 \section{Slots}{
 
@@ -119,14 +114,24 @@ args <- argsparsR(matrix(c(
                   byrow = TRUE
                   )
          )
-args <- argsparsR(matrix(c(
-                  'name', '--name', '-n', 'character', 'me',
-                  'age' , '--age' , ''  , 'integer'  ,  0  ,
-                  'town', ''      , '-t', 'character', 'Brusaporco (TV)'
-                  ),
-                  nrow = 3,
-                  byrow = TRUE
-                  )
-         )
+
+\dontrun{
+## suppose the script is called as
+## Rscript myscript.R --age 99
+
+print(args)
+## $params
+## [1] "name" "age"  "town"
+##
+## $values
+## $values$name
+## [1] "me"
+##
+## $values$age
+## [1] 99
+##
+## $values$town
+## [1] "Brusaporco (TV)"
+}
 }
 

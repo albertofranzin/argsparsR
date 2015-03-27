@@ -39,6 +39,20 @@ some optional arguments, for which refer to the documentation of `read.table`.
 
 The definitions in the file must be defined by row.
 
+The file can also be given as first command line parameter; in this case, use
+an empty constructor `argsparsR()`, with no arguments.
+
+When a valid parameter definition is given, the method returns a list containing:
+
+* `params`, a vector containing the parameter names;
+
+* `values`, a vector containing the values for the corresponding parameter in
+  `params`. The value is the value provided through command line
+  if present, and the default value otherwise.
+
+If no definition is given in the constructor, and the first command line
+is not a valid file, the raw list of command line parameters is returned.
+
 # Installation
 The package is hosted at https://github.com/albertofranzin/argsparsR.
 
@@ -55,8 +69,43 @@ make install
 ```
 
 # Usage
-In your script, before using the command line parameters, first define the
-matrix of definitions
+Here some examples to show th various usage possibilities,
+with a file passed as first argument, with a file passed to the constructor,
+and with a matrix of definitions.
+
+1. Parameter definitions in a file passed as first parameter:
+create a valid file by, say,
+```bash
+echo -e "name --name -n character me\n\
+age  --age  '' integer   99\n\
+town ''     -t character Bruxelles" > pars.txt
+```
+In your script `myscript.R` place
+```r
+params <- argsparsR()
+```
+and run
+```bash
+Rscript myscript.R pars.txt --name "Someone Else" -t "Nowhere"
+```
+
+2. Parameter definition in a file passed to the constructor:
+```bash
+echo -e "name --name -n character me\n\
+age  --age  '' integer   99\n\
+town ''     -t character Bruxelles" > pars.txt
+```
+In your script `myscript.R` place
+```r
+params <- argsparsR("pars.txt")
+```
+and run
+```bash
+Rscript myscript.R --name "Someone Else" -t "Nowhere"
+```
+
+3. Without files. In your script, before using the command line parameters,
+first define the matrix of definitions, then call `argsparsR` as:
 ```r
 param.definitions <-
             matrix(c(
@@ -67,19 +116,15 @@ param.definitions <-
             nrow = 3,
             byrow = TRUE
           )
-```
-then create the `argsparsR` object and parse the arguments with
-```r
 parser <- argsparsR(param.definitions)
-params <- parsR(parser)
 ```
 
-Suppose you are calling your script as
-```
-$ Rscript myscript.R --name "Someone Else" -t "Nowhere"
+Then run
+```bash
+Rscript myscript.R --name "Someone Else" -t "Nowhere"
 ```
 
-Then, the `params` object of the above snippet will contain:
+In all of the above cases, the `params` object will contain:
 
 * `params$params` a vector containing the names of the parameters:
     `('name' 'age' 'town')`

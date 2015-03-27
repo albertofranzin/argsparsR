@@ -1,9 +1,9 @@
-#' @name argsparsR
-#' @rdname argsparsR-class
-#' @aliases initialize,argsparsR-method
-#' 
-#' @param .Object an argsparsR object.
-#' 
+# ' @name argsparsR
+# ' @rdname argsparsR-class
+# ' @aliases initialize,argsparsR-method
+# ' 
+# ' @param .Object an argsparsR object.
+# ' 
 setMethod(
   "initialize",
   "argsparsR",
@@ -13,98 +13,47 @@ setMethod(
 )
 
 
-#' constructor for `argsparsR` objects.
-#'
-#' Create an instance of an \code{argsparsR} object.
-#'
-#' The argument list is defined as a 5-column matrix, whose columns are:
-#'
-#' 1. name of the argument (string, no spaces)
-#'
-#' 2. long flag, of the kind \code{--argument} (string, no spaces)
-#'
-#' 3. short flag, of the kind \code{-a} (string, no spaces)
-#'
-#' 4. argument (basic R-)type (one among character, logical, integer, numeric)
-#'
-#' 5. default value
-#'
-#' Providing at least one among the long and the short flags is mandatory,
-#' both is optional. Remember anyway that you are filling in an R array,
-#' so if you don't specify an item you have to set it to \code{''}.
-#'
-#' There are more ways to provide the definition to \code{argsparsR}.
-#'
-#' The first way is to provide a \code{matrix} containing the definitions.
-#' The \code{data} vector of the \code{matrix} is the list of definitions.
-#'
-#' The \code{nrow} parameter of \code{matrix} is the number of argument
-#' definitions given.
-#'
-#' The \code{byrow=TRUE} option in the matrix definition is also preferred,
-#' as this allows a much more clear representation than the R default behaviour
-#' of column-wise packing of the data.
-#'
-#' The second method is by providing a text file containing the definitions, as
-#' defined in the beginning of this section. It is also possible to specify
-#' some optional arguments, for which refer to the documentation of \code{read.table}.
-#'
-#' The definitions in the file must be defined by row.
-#'
-#' @param args matrix of argument definitions, as defined in the `Details` section.
-#' @param ... optional arguments of \code{read.table}.
-#'
-#' @return a \code{argsparsR} object compiled with the parameter definitions given.
-#'
-#' @examples
-#' args <- argsparsR(matrix(c(
-#'                   'name', '--name', '-n', 'character', 'me',
-#'                   'age' , '--age' , ''  , 'integer'  ,  0  ,
-#'                   'town', ''      , '-t', 'character', 'Brusaporco (TV)'
-#'                   ),
-#'                   nrow = 3,
-#'                   byrow = TRUE
-#'                   )
-#'          )
-#'
 #' @name argsparsR
 #' @rdname argsparsR-class
-#' 
-#'
 #' @export
-argsparsR <- function(args = NULL, ...) {
+argsparsR <- function(args.defs = NULL, ...) {
 
   x <- new("argsparsR")
 
-  if (is.null(args)) {
-    warning("argsparsR :: no arguments definition given, returning the raw list of command line arguments.\n",
-            "Please take a look at > ?argsparsR for help.")
-    return (commandArgs(trailingOnly = TRUE))
-  }
+  cargs     <- commandArgs(trailingOnly = TRUE)
+  was.null  <- is.null(args.defs)
 
-  # if args is a file, read the file
-  if (class(args) == "character") {
-    # check if file exists
-    if (!file.exists(args)) {
-      # - if not, is it a valid string (== can be transformed in a matrix?)
-    } else {
-      # check file type
-      # write method for reading csv (in util.R)
-      args <- read.params.file(args, ...)
-      # write method for reading text file (in util.R)
+  if (!class(args.defs) == "matrix"                         &&
+      (was.null || class(args.defs) == "character") ) {
+
+    if (was.null) {
+      # Check if the first parameter is an existing file.
+      # If yes, it is assumed it contains valid definitions.
+      args.defs <- cargs[1]
+      cargs     <- cargs[-1]
     }
 
-  }
+    if (file.exists(args.defs)) {
+      args.defs <- read.params.file(args.defs, ...)
+    } else if (was.null) {
+      # reinsert first parameter and return the raw list of command line arguments
+      message("argsparsR :: no valid definitions given, returning the list of arguments as is.")
+      return(c(args.defs, cargs))
+    } else {
+       # then args.defs must be a string containing valid definitions
+       # TODO implement
+       stop("argsparsR fatal error :: definition type not yet supported.")
+    }
 
-  # otherwise...
+  } # otherwise, it must already be a valid matrix - TODO: check
 
-  x@args <- args
-  x@no.args <- nrow(args)
-  x@args.names <- args[,1]
-  x@long.flags <- args[,2]
-  x@short.flags <- args[,3]
-  x@args.types  <- tolower(c(args[,4]))
-  x@args.defaults <- as.list(args[,5])
+  x@args          <- args.defs
+  x@no.args       <- nrow(args.defs)
+  x@args.names    <- args.defs[,1]
+  x@long.flags    <- args.defs[,2]
+  x@short.flags   <- args.defs[,3]
+  x@args.types    <- tolower(c(args.defs[,4]))
+  x@args.defaults <- as.list(args.defs[,5])
 
   # check argument types: allowed for now are
   # integer, numeric, logical, character
@@ -137,18 +86,33 @@ argsparsR <- function(args = NULL, ...) {
 
   x@values <- x@args.defaults
 
-  return(x)
+  return(parsR(cargs, x))
 }
 
-
-#' @rdname parsR
-#' @aliases parsR,argsparsR
-setMethod("parsR",
-          "argsparsR",
-          function(x)
-{
-  cargs <- commandArgs(trailingOnly = TRUE)
-
+# ' parse command line arguments.
+# '
+# ' Parse command line arguments according to the definitions
+# ' provided to the constructor \code{argsparsR}.
+# '
+# ' Errors are thrown in case of mismatch between the nominal type of
+# ' the parameter and the actual type of the value given.
+# '
+# ' @param cargs the list of command line arguments passed by the user.
+# ' @param x a \code{argsparsR} object.
+# '
+# ' @return a list containing:
+# '
+# ' * \code{params}, a vector containing the parameter names
+# '
+# ' * \code{values}, a vector containing the values for the corresponding parameter in
+# ' \code{params}. The value is the value provided through command line
+# ' if present, and the default value otherwise.
+# '
+# ' @name parsR
+# ' @rdname parsR
+# '
+# ' @export
+parsR <- function(cargs, x) {
   i <- 1
   ncargs <- length(cargs)
   while (i <= ncargs) {
@@ -184,5 +148,4 @@ setMethod("parsR",
               "values" = x@values))
 
 }
-)
 
