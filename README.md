@@ -90,7 +90,7 @@ Here some examples to show th various usage possibilities,
 with a file passed as first argument, with a file passed to the constructor,
 and with a matrix of definitions.
 
-1. Parameter definitions in a file passed as first parameter:
+* Parameter definitions in a file passed as first parameter:
 create a valid file by, say,
 ```bash
 echo -e "name --name -n character me\n\
@@ -106,7 +106,7 @@ and run
 Rscript myscript.R pars.txt --name "Someone Else" -t "Nowhere"
 ```
 
-2. Parameter definition in a file passed to the constructor:
+* Parameter definition in a file passed to the constructor:
 ```bash
 echo -e "name --name -n character me\n\
 age  --age  '' integer   99\n\
@@ -121,7 +121,7 @@ and run
 Rscript myscript.R --name "Someone Else" -t "Nowhere"
 ```
 
-3. Without files. In your script, before using the command line parameters,
+* Without files. In your script, before using the command line parameters,
 first define the matrix of definitions, then call `argsparsR` as:
 ```r
 param.definitions <-

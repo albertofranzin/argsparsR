@@ -86,7 +86,7 @@ argsparsR <- function(args.defs = NULL, ...) {
   for (i in 1:x@no.args) {
     if (grepl(' ', x@args.names[i]) == TRUE ||
         grepl(' ', x@long.flags[i]) == TRUE ||
-        grepl(' ', x@long.flags[i]) == TRUE   ) {
+        grepl(' ', x@short.flags[i]) == TRUE   ) {
       stop("argsparsR fatal error :: no spaces are allowed in arguments names or flags.")
     }
 
@@ -100,6 +100,16 @@ argsparsR <- function(args.defs = NULL, ...) {
              "' is not of type '",x@args.types[i],"'\n")
       }
     )
+  }
+  
+  # look for duplicates
+  unames  <- unique(x@args.names)
+  ulflags <- unique(x@long.flags[which(x@long.flags != '')])
+  usflags <- unique(x@short.flags[which(x@short.flags != '')])
+  if (length(unames) != length(x@args.names)                             ||
+      length(ulflags) != length(x@long.flags[which(x@long.flags != '')]) ||
+      length(usflags) != length(x@short.flags[which(x@short.flags != '')]) ) {
+    stop("argsparsR fatal error :: no duplicates allowed in parameter names or flags.")
   }
 
   x@values <- x@args.defaults
