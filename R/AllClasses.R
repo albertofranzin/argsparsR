@@ -2,7 +2,7 @@
 #'
 #' \code{argsparsR} creates an instance of a \code{argsparsR} object.
 #' 
-#' The argument list is defined as a 6-column matrix, whose columns are:
+#' The argument list is defined as a 7-column matrix, whose columns are:
 #'
 #' 1. name of the argument (string, no spaces)
 #' 2. long flag, of the kind `--argument` (string, no spaces)
@@ -14,22 +14,30 @@
 #' `k` values are to be read after the flag (e.g. `3` for something like
 #' `--3Dcoord 5 7 8`). `-1` means instead an arbitrary number of values,
 #' until another flag is found, or there are no more parameters.
-#' 6. default value(s). If the value in the 5th column is `0`, just write `''`,
+#' 6. the range of values that each parameter can take. May be \code{*}
+#' to denote 'no restrictions'. A sequence of values separated by \code{|} as \code{a|b|c}
+#' denotes a sequence of categorical values. Closed ranges of consecutive values 
+#' are denoted with a dash between the two extremes like \code{a-b},
+#' while open ranges can be denoted with \code{<=k}, \code{<k}, \code{>k}, \code{>=k}.
+#' Ranges for strings are interpreted in lexicographical sense. Ranges are used only to
+#' validate the command line values, and are not returned to the user.
+#' If the corresponding value in column 5 is \code{0}, insert \code{*}.
+#' 7. default value(s). If the value in the 5th column is `0`, just write `''`,
 #' do not leave a blank space; if the value in the 5th column is not `0` or `1`,
 #' write the sequence of values separated by commas without blank spaces,
 #' e.g. `5,6,NA,8` or `a,c,g,t`.
 #' 
 #' Providing at least one among the long and the short flags is mandatory,
 #' both is optional. Remember anyway that you are filling in an R array,
-#' so if you don't specify an item you have to set it to `''`.
+#' so if you don't specify an item you have to set it to \code{''}.
 #' 
-#' Parameters with `0` values expected after the flag act as yes/no indicators.
+#' Parameters with \code{0} values expected after the flag act as yes/no indicators.
 #' In this case, the value the parameter will take after the processing, if the
 #' (or one of the) corresponding flag(s) is present is the name of the parameter.
-#' Default value should be `''`.
+#' Default value should be \code{''}.
 #' 
-#' Parameters with `k > 1` values expected after the flag have to be _exactly_
-#' `k` values after the flag, otherwise bad things will happen.
+#' Parameters with \code{k > 1} values expected after the flag have to be _exactly_
+#' \code{k} values after the flag, otherwise bad things will happen.
 #'
 #' There are more ways to provide the definition to \code{argsparsR}.
 #'
@@ -148,6 +156,7 @@
 #' that after the flag there is one value to consider for that parameter, `2`
 #' means that there are two values to evaluate after the flag, and so on.
 #' A value `< 0` means that an arbitrary number of values is expected (not supported yet).
+#' @slot ranges ranges of allowed values. See the `Details` section.
 #' @slot args.defaults list of default values for the arguments. Positions correspond
 #' to the positions in \code{args.names}.
 #' @slot values list of the actual values of the parameters, as from the command line.
@@ -162,6 +171,7 @@ setClass("argsparsR",
             short.flags   = "character",
             args.types    = "character",
             args.no.vals  = "integer",
+            args.ranges   = "character",
             args.defaults = "list",
             values        = "list"
          ),
@@ -174,6 +184,7 @@ setClass("argsparsR",
             args.types    = NULL,
             args.no.vals  = NULL,
             args.defaults = NULL,
+            args.ranges   = NULL,
             values        = NULL
          )
 )

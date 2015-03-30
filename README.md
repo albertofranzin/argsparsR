@@ -9,7 +9,7 @@ Description
 `argsparsR` is a small package to get and interpret command line parameters
 passed to R scripts (e.g. scripts run with `Rscript`). 
 
-The argument list is defined as a 6-column matrix, whose columns are:
+The argument list is defined as a 7-column matrix, whose columns are:
 
 1. name of the argument (string, no spaces)
 2. long flag, of the kind `--argument` (string, no spaces)
@@ -21,7 +21,15 @@ The argument list is defined as a 6-column matrix, whose columns are:
    `k` values are to be read after the flag (e.g. `3` for something like
    `--3Dcoord 5 7 8`). `-1` means instead an arbitrary number of values,
    until another flag is found, or there are no more parameters.
-6. default value(s). If the value in the 5th column is `0`, just write `''`,
+6. the range of values that each parameter can take. May be `*`
+   to denote 'no restrictions'. A sequence of values separated by `|` as `a|b|c`
+   denotes a sequence of categorical values. Closed ranges of consecutive values 
+   are denoted with a dash between the two extremes like `a-b`,
+   while open ranges can be denoted with `<=k`, `<k`, `>k`, `>=k`.
+   Ranges for strings are interpreted in lexicographical sense. Ranges are used only to
+   validate the command line values, and are not returned to the user.
+   If the corresponding value in column `5` is `0`, insert `*`.
+7. default value(s). If the value in the 5th column is `0`, just write `''`,
    do not leave a blank space; if the value in the 5th column is not `0` or `1`,
    write the sequence of values separated by commas without blank spaces,
    e.g. `5,6,NA,8` or `a,c,g,t`.
@@ -37,6 +45,24 @@ Default value should be `''`.
 
 Parameters with `k > 1` values expected after the flag have to be _exactly_
 `k` values after the flag, otherwise bad things will happen.
+
+Parameters that no values after the flag are defined as
+```
+name --flag -f character 0 ''
+```
+and are called as
+```bash
+Rscript myscript.R --flag
+```
+
+Parameter that take more than one value after the flag are defined as
+```
+name --flag -f numeric 5 1,2,3,4,5
+```
+and are called as
+```bash
+Rscript myscript.R --flag 4 5 6 7 8
+```
 
 There are more ways to provide the definition to `argsparsR`.
 
@@ -91,34 +117,36 @@ with a file passed as first argument, with a file passed to the constructor,
 and with a matrix of definitions.
 
 * Parameter definitions in a file passed as first parameter:
-create a valid file by, say,
+create a valid file like, say,
 ```bash
-echo -e "name --name -n character me\n\
-age  --age  '' integer   99\n\
-town ''     -t character Bruxelles" > pars.txt
+ID       --id       '' integer    1 >0          1
+name     --name     -n character  2 *           John,Doe
+age      --age      '' numeric    1 >=0         25
+address  --address  -a character -1 *           Avenue,Roosevelt,50,1050,Bruxelles
+phone    --phone    -p character  1 *           123-4567
+enrolled --enrolled -e logical    1 *           TRUE
+room     --room     -r integer    1 101-104|115 103
+start    ''         -s character  0 *           ''
 ```
+called, for example, `pars.txt`.
+
 In your script `myscript.R` place
 ```r
 params <- argsparsR()
 ```
 and run
 ```bash
-Rscript myscript.R pars.txt --name "Someone Else" -t "Nowhere"
+Rscript myscript.R pars.txt --name Sherlock Holmes -age 60 -s -a 221/B Baker Street London
 ```
 
 * Parameter definition in a file passed to the constructor:
-```bash
-echo -e "name --name -n character me\n\
-age  --age  '' integer   99\n\
-town ''     -t character Bruxelles" > pars.txt
-```
 In your script `myscript.R` place
 ```r
 params <- argsparsR("pars.txt")
 ```
 and run
 ```bash
-Rscript myscript.R --name "Someone Else" -t "Nowhere"
+Rscript myscript.R --name Sherlock Holmes -age 60 -s -a 221/B Baker Street London
 ```
 
 * Without files. In your script, before using the command line parameters,
@@ -126,11 +154,16 @@ first define the matrix of definitions, then call `argsparsR` as:
 ```r
 param.definitions <-
             matrix(c(
-              'name', '--name', '-n', 'character', 'me',
-              'age' , '--age' , ''  , 'integer'  ,  99 ,
-              'town', ''      , '-t', 'character', 'Bruxelles'
+              "ID", "--id", "''", "integer", "1", ">0", "1",
+              "name", "--name", "-n", "character", "2", "*", "John,Doe",
+              "age", "--age", "''", "numeric", "1", ">=0", "25",
+              "address", "--address", "-a", "character", "-1", "*", "Avenue,Roosevelt,50,1050,Bruxelles",
+              "phone", "--phone", "-p", "character", "1", "*", "123-4567",
+              "enrolled", "--enrolled", "-e", "logical", "1", "*", "TRUE",
+              "room", "--room", "-r", "integer", "1", "101-104|115", "103",
+              "enable_action", "''", "-e", "character", "0", "*", "''"
             ),
-            nrow = 3,
+            nrow = 8,
             byrow = TRUE
           )
 parser <- argsparsR(param.definitions)
@@ -138,35 +171,26 @@ parser <- argsparsR(param.definitions)
 
 Then run
 ```bash
-Rscript myscript.R --name "Someone Else" -t "Nowhere"
+Rscript myscript.R --name Sherlock Holmes -age 60 -s -a 221/B Baker Street London
 ```
 
 In all of the above cases, the `params` object will contain:
 
 * `params$params` a vector containing the names of the parameters:
-    `('name' 'age' 'town')`
+    `('ID', 'name' 'age' 'address', 'phone', 'enrolled', 'room', 'start')`
 
 * `params$values` a list containing the values for the corresponding elements
     in `params$params`, with the desired values for the parameters actually
     seen in the command, and the default values for the other ones:
-    1. `params$values$name` with value `'Someone Else'`
-    2. `params$values$age` with value `99`
-    3. `params$values$town` with value `'Nowhere'`.
+    1. `params$values$ID` with value `1`
+    2. `params$values$name` with value `Sherlock Holmes`
+    3. `params$values$age` with value `60`
+    4. `params$values$address` with value `221/B Baker Street London`
+    5. `params$values$phone` with value `123-4567`
+    6. `params$values$enrolled` with value `TRUE`
+    7. `params$values$room` with value `103`
+    8. `params$values$restart` with value `start`.
 
-Parameters that no values after the flag are defined as
-```
-name --flag -f character 0 ''
-```
-and are called as
-```bash
-Rscript myscript.R --flag
-```
-
-Parameter that take more than one value after the flag are defined as
-```
-name --flag -f numeric 5 1,2,3,4,5
-```
-and are called as
-```bash
-Rscript myscript.R --flag 4 5 6 7 8
-```
+Note that in this little example, values for `name` and `address` are array of `character`.
+It would be the same, however, to spacify them as unique strings, by, for example,
+`--name "Sherlock Holmes"` and `-a "221/B Baker Street London"`.

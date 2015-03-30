@@ -1,0 +1,8 @@
+ID       --id       '' integer    1 >0          1
+name     --name     -n character  2 *           John,Doe
+age      --age      '' numeric    1 >=0         25
+address  --address  -a character -1 *           Avenue,Roosevelt,50,1050,Bruxelles
+phone    --phone    -p character  1 *           123-4567
+enrolled --enrolled -e logical    1 *           TRUE
+room     --room     -r integer    1 101-104|115 103
+start    ''         -s character  0 *           ''

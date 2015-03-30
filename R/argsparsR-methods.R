@@ -53,8 +53,9 @@ argsparsR <- function(args.defs = NULL, ...) {
   x@long.flags    <- args.defs[,2]
   x@short.flags   <- args.defs[,3]
   x@args.types    <- tolower(c(args.defs[,4]))
+  x@args.ranges   <- args.defs[,6]
   x@args.defaults <- list(rep(NULL,x@no.args))
-  
+
   for (i in 1:x@no.args) {
     tryCatch(
       x@args.no.vals[i] <- as.integer(args.defs[i,5])
@@ -65,10 +66,11 @@ argsparsR <- function(args.defs = NULL, ...) {
              "' must be an integer.\n")
       }
     )
+
     if (x@args.no.vals[i] %in% c(0,1))
-      x@args.defaults[[i]] <- args.defs[i,6]
+      x@args.defaults[[i]] <- args.defs[i,7]
     else {
-      x@args.defaults[[i]] <- strsplit(args.defs[i,6],',')[[1]]
+      x@args.defaults[[i]] <- strsplit(args.defs[i,7],',')[[1]]
     }
     names(x@args.defaults[[i]]) <- NULL
   }
@@ -172,7 +174,15 @@ parsR <- function(cargs, x) {
         # variable number of values: iterate get until a new flag is found,
         # or until the parameters are finished
         # find value for end
-        # TODO implement
+        end <- i + 1
+        while (end <= ncargs) {
+          p1 <- match(cargs[end], x@long.flags)
+          p2 <- match(cargs[end], x@short.flags)
+          if (!is.na(p1) || !is.na(p2)) break
+          end <- end + 1
+        }
+        end <- end - 1
+        
       }
       
       vals <- c()
@@ -193,6 +203,17 @@ parsR <- function(cargs, x) {
     }
 
     i <- i + 1
+  }
+  
+  all.valid <- rep(F, x@no.args)
+  for (i in 1:x@no.args)
+    all.valid[i] <- in.valid.range(x@values[[i]], x@args.ranges[i])
+  
+  if (sum(all.valid) < x@no.args) {
+    message("argsparsR :: there are values not allowed for parameter(s): ",
+            strcat(x@args.names[which(all.valid == F)], sep=' '),"\n")
+    print.help(x@args)
+    stop("argsparsR fatal error :: some values are not in the allowed range.")
   }
 
   names(x@values) <- as.list(x@args.names)
