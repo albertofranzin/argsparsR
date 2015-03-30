@@ -192,5 +192,8 @@ In all of the above cases, the `params` object will contain:
     8. `params$values$restart` with value `start`.
 
 Note that in this little example, values for `name` and `address` are array of `character`.
-It would be the same, however, to spacify them as unique strings, by, for example,
-`--name "Sherlock Holmes"` and `-a "221/B Baker Street London"`.
+It would have been possible, however, to specify them as unique strings, by, for example,
+`--name "Sherlock Holmes"` and `-a "221/B Baker Street London"`. The only required change
+is in the definition of `name`, whose number of values should become `1` (for fixed lenght
+of values) or some negative value (for an arbitrary number of values). For the same reason,
+the definition of `address` is perfectly fine.

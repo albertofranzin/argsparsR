@@ -23,8 +23,8 @@ argsparsR <- function(args.defs = NULL, ...) {
   cargs     <- commandArgs(trailingOnly = TRUE)
   was.null  <- is.null(args.defs)
 
-  if (!class(args.defs) == "matrix"                         &&
-      (was.null || class(args.defs) == "character") ) {
+  if (!class(args.defs) == "matrix"                &&
+      (was.null || class(args.defs) == "character")  ) {
 
     if (was.null) {
       # Check if the first parameter is an existing file.
