@@ -43,7 +43,7 @@ In this case, the value the parameter will take after the processing, if the
 (or one of the) corresponding flag(s) is present is the name of the parameter.
 Default value should be `''`.
 
-Parameters with `k > 1` values expected after the flag have to be _exactly_
+Parameters with `k > 1` values expected after the flag must have _exactly_
 `k` values after the flag, otherwise bad things will happen.
 
 Parameters that no values after the flag are defined as
