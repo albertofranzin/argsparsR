@@ -48,7 +48,7 @@ Parameters with `k > 1` values expected after the flag must have _exactly_
 
 Parameters that no values after the flag are defined as
 ```
-name --flag -f character 0 ''
+name --flag -f character 0 * ''
 ```
 and are called as
 ```bash
@@ -57,7 +57,7 @@ Rscript myscript.R --flag
 
 Parameter that take more than one value after the flag are defined as
 ```
-name --flag -f numeric 5 1,2,3,4,5
+name --flag -f numeric 5 1-100 1,2,3,4,5
 ```
 and are called as
 ```bash
