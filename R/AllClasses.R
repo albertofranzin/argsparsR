@@ -75,6 +75,9 @@
 #' as defined in the `Details` section, or `NULL`, or nothing provided. In case
 #' of `NULL` or not provided, then it is assumed that the first parameter given
 #' in the command line is a file containing the definitions.
+#' @param format currently, only "argsparsR" (default, can be omitted)
+#' is supported. This parameter has been added in order to allow the
+#' (future) support for definitions in different formats.
 #' @param ... optional arguments of \code{read.table}.
 #'
 #' @return if a valid parameter definition is given, a list containing:
