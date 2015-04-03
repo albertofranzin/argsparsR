@@ -3,3 +3,7 @@ language: r
 warnings_are_errors: true
 
 sudo: required
+
+- env
+  global:
+    - _R_CRAN_CHECK_INCOMING_=false
