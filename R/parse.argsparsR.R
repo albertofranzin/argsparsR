@@ -1,6 +1,7 @@
 #' Parse definitions provided in the argsparsR format.
 #' 
 #' @param args.defs definition of parameters.
+#' @param ... optional arguments for \code{read.table}.
 #' 
 parse.argsparsR <- function(args.defs = NULL, ...) {
   

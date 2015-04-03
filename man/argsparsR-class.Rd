@@ -7,13 +7,17 @@
 \alias{argsparsR-class}
 \title{argsparsR.}
 \usage{
-argsparsR(args.defs = NULL, ...)
+argsparsR(args.defs = NULL, format = "argsparsR", ...)
 }
 \arguments{
 \item{args.defs}{(file containing the) matrix of argument definitions,
 as defined in the `Details` section, or `NULL`, or nothing provided. In case
 of `NULL` or not provided, then it is assumed that the first parameter given
 in the command line is a file containing the definitions.}
+
+\item{format}{currently, only "argsparsR" (default, can be omitted)
+is supported. This parameter has been added in order to allow the
+(future) support for definitions in different formats.}
 
 \item{...}{optional arguments of \code{read.table}.}
 }
