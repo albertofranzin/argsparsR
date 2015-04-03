@@ -6,3 +6,4 @@
 6. ~~support for parameters of the kind `flag val1 val2 ...`~~
 7. (with more calm) print.help() prints values of the right type, not all strings
 8. ~~add support for range of values (6th column) (VALID ONLY FOR CHECKING THE PARAMETERS - not returned to the user)~~
+9. add support for irace parameter description file format
